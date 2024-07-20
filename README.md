@@ -5,9 +5,10 @@ A TypeScript library for handling environment variables in a typesafe manner usi
 ## Features
 
 - **Type Safety**: Define environment variable schemas with Zod and ensure type safety throughout your application.
-- **Multiple Sources**: Support for different environment variable sources like Node process environment, `.env` files, in-memory records, and custom sources.
+- **Multiple Sources**: Support for different environment variable sources like Node process environment, `.env` files,
+  in-memory records, and custom sources.
 - **Detailed Validation**: Provides detailed validation errors for misconfigured environment variables.
-- **Ease of Use**: Simple API for fetching and using environment variables.
+- **Ease of Use**: Access environment variables directly without needing to call getter methods.
 
 ## Installation
 
@@ -23,58 +24,115 @@ First, create an `env.ts` file where you define your schema and environment conf
 
 ```typescript
 // env.ts
-import { z } from "zod";
-import { createEnv } from "@jvhaile/zod-env";
+import {z} from "zod";
+import {createEnv} from "@jvhaile/zod-env";
 
 // Create the environment configuration
-export const env = createEnv({ source: 'node' }, {
-    PORT: z.string().regex(/^\d+$/),
-    NODE_ENV: z.enum(["development", "production"]),
-});
+export const env = createEnv(
+    {source: 'node'},
+    {
+        PORT: z.string().regex(/^\d+$/),
+        NODE_ENV: z.enum(["development", "production"]),
+    }
+);
 
 // Other options: 
 // export const env = createEnv({ source: 'memory', record: { PORT: "3000", NODE_ENV: "development" } }, { ...schema });
-// export const env = createEnv({ source: 'dotenv', path: '.env' }, { ...schema });
+// export const env = createEnv({ source: 'dotenv' }, { ...schema });
 // export const env = createEnv({ source: 'custom', fetch: () => ({ PORT: "3000", NODE_ENV: "development" }) }, { ...schema });
 ```
 
 ### Fetch Environment Variables
 
-You can now use the `env` object to access your environment variables throughout your application:
+You can now use the `env` object to access your environment variables directly:
 
 ```typescript
 // Example usage in your application
-import { env } from "./env";
+import {env} from "./env";
 
-console.log(env.get("PORT")); // e.g., "3000"
-console.log(env.get("NODE_ENV")); // e.g., "development"
+console.log(env.PORT); // e.g., "3000"
+console.log(env.NODE_ENV); // e.g., "development"
 ```
 
-## API
+### Alternate Direct Functions
 
-### `createEnv<T extends EnvRecord>(option: SourceOption, schema: T): Env<inferEnvType<T>>`
+You can also use the provided direct functions to create environment configurations from different sources:
 
-Fetch environment variables from a specified source (node, memory, dotenv, custom) and validate them against the provided schema.
+#### Node Process Environment
 
-#### SourceOption
+Fetch environment variables from `process.env`.
 
 ```typescript
-type SourceOption =
-    | { source: 'node' }
-    | { source: 'memory', record: Record<string, string> }
-    | { source: 'dotenv', path?: string }
-    | { source: 'custom', fetch: () => Record<string, string> }
+import {nodeProcessEnv} from "@jvhaile/zod-env";
+import {z} from "zod";
+
+const env = nodeProcessEnv({
+    PORT: z.string().regex(/^\d+$/),
+    NODE_ENV: z.enum(["development", "production"]),
+});
+
+console.log(env.PORT); // e.g., "3000"
+console.log(env.NODE_ENV); // e.g., "development"
 ```
 
-### `Env<T>`
+#### .env File
 
-#### `get<K extends keyof T>(key: K): T[K]`
+Fetch environment variables from a `.env` file.
 
-Fetch the value of an environment variable. Throws an error if the key is not found.
+```typescript
+import {dotEnv} from "@jvhaile/zod-env";
+import {z} from "zod";
 
-#### `getRecord(): T`
+const env = dotEnv({
+    PORT: z.string().regex(/^\d+$/),
+    NODE_ENV: z.enum(["development", "production"]),
+});
 
-Get the entire record of environment variables.
+console.log(env.PORT); // e.g., "3000"
+console.log(env.NODE_ENV); // e.g., "development"
+```
+
+#### In-Memory Record
+
+Fetch environment variables from an in-memory record.
+
+```typescript
+import {memoryEnv} from "@jvhaile/zod-env";
+import {z} from "zod";
+
+const env = memoryEnv({
+    PORT: z.string().regex(/^\d+$/),
+    NODE_ENV: z.enum(["development", "production"]),
+}, {PORT: "3000", NODE_ENV: "development"});
+
+console.log(env.PORT); // e.g., "3000"
+console.log(env.NODE_ENV); // e.g., "development"
+```
+
+#### Custom Source
+
+Fetch environment variables from a custom source.
+
+```typescript
+import {customEnv} from "@jvhaile/zod-env";
+import {z} from "zod";
+
+const customFetch = () => {
+    // Custom logic to fetch environment variables
+    return {
+        PORT: "3000",
+        NODE_ENV: "development",
+    };
+};
+
+const env = customEnv(customFetch, {
+    PORT: z.string().regex(/^\d+$/),
+    NODE_ENV: z.enum(["development", "production"]),
+});
+
+console.log(env.PORT); // e.g., "3000"
+console.log(env.NODE_ENV); // e.g., "development"
+```
 
 ## Contributing
 

@@ -1,6 +1,6 @@
 {
   "name": "@jvhaile/zod-env",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A TypeScript library for handling environment variables in a typesafe manner using Zod schemas.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
