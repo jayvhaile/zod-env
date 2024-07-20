@@ -1,5 +1,5 @@
 import {EnvSource} from "../env-source/env-source";
-import {ZodSchema} from "zod";
+import {z, ZodSchema, ZodTypeAny, infer as zodInfer, ZodObject} from "zod";
 
 export class Env<T> {
     private readonly record: T
@@ -12,9 +12,11 @@ export class Env<T> {
     }
 
 
-    static create<T>(source: EnvSource, schema: ZodSchema<T>) {
-        return new Env(source, schema)
+    static create<S extends EnvRecord>(source: EnvSource, schema: S): Env<inferEnvType<S>> {
+        const zodSchema = z.object(schema);
+        return new Env(source, zodSchema);
     }
+
 
     get<K extends keyof T>(key: K): T[K] {
         const value = this.record[key]
@@ -28,3 +30,6 @@ export class Env<T> {
         return this.record
     }
 }
+
+export type EnvRecord = Record<string, ZodTypeAny>
+export type inferEnvType<S extends EnvRecord> = { [K in keyof S]: S[K]['_type'] }

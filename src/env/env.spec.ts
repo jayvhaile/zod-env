@@ -7,10 +7,10 @@ describe("env.ts tests", () => {
     it("should work when data satisfies schema", () => {
         // Arrange
         const source = new MemoryEnvSource({key: "value"})
-        const schema = z.object({
+
+        const env = Env.create(source, {
             key: z.string()
         })
-        const env = Env.create(source, schema)
 
         // Act
         const key = env.get("key")
@@ -22,12 +22,12 @@ describe("env.ts tests", () => {
     it("should throw error if data does not satisfy schema", () => {
         // Arrange
         const source = new MemoryEnvSource({key: 1})
-        const schema = z.object({
-            key: z.string()
-        })
+
 
         // Act
-        const createEnv = () => Env.create(source, schema)
+        const createEnv = () => Env.create(source, {
+            key: z.string()
+        })
 
         // Assert
         expect(createEnv).toThrowError()
@@ -36,10 +36,10 @@ describe("env.ts tests", () => {
     it("should throw if key is not present", () => {
         // Arrange
         const source = new MemoryEnvSource({key: "value"})
-        const schema = z.object({
+
+        const env = Env.create(source, {
             key: z.string()
         })
-        const env = Env.create(source, schema)
 
         //@ts-ignore
         const getKey = () => env.get("notKey")
