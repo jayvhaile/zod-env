@@ -15,6 +15,9 @@ export function dotEnv<T extends EnvRecord>(path: string, schema: T): inferEnvTy
     return Env.create(new DotEnvFileSource(path), schema).getRecord()
 }
 
+export function customEnv<T extends EnvRecord>(fetch: () => Record<string, string>, schema: T): inferEnvType<T> {
+    return Env.create({fetch}, schema).getRecord()
+}
 
 
 export function createEnv<T extends EnvRecord>(source: SourceOption, schema: T): inferEnvType<T> {
