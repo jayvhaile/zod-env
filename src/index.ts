@@ -11,8 +11,8 @@ export function memoryEnv<T extends EnvRecord>(schema: T, record: Record<string,
     return Env.create(new MemoryEnvSource(record), schema).getRecord()
 }
 
-export function dotEnv<T extends EnvRecord>(path: string, schema: T): inferEnvType<T> {
-    return Env.create(new DotEnvFileSource(path), schema).getRecord()
+export function dotEnv<T extends EnvRecord>(schema: T, path: string = '.env'): inferEnvType<T> {
+    return Env.create(new DotEnvFileSource('.env'), schema).getRecord()
 }
 
 export function customEnv<T extends EnvRecord>(fetch: () => Record<string, string>, schema: T): inferEnvType<T> {
@@ -27,7 +27,7 @@ export function createEnv<T extends EnvRecord>(source: SourceOption, schema: T):
         case "node":
             return nodeProcessEnv(schema)
         case "dotenv":
-            return dotEnv(source.path || '.env', schema)
+            return dotEnv(schema, source.path || '.env')
         case "custom":
             return Env.create({fetch: source.fetch}, schema).getRecord()
     }

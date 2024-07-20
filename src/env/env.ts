@@ -1,5 +1,5 @@
 import {EnvSource} from "../env-source/env-source";
-import {z, ZodSchema, ZodTypeAny, infer as zodInfer, ZodObject} from "zod";
+import {z, ZodSchema, ZodTypeAny, infer as zodInfer, ZodObject, ZodError} from "zod";
 
 export class Env<T> {
     private readonly record: T
@@ -8,7 +8,16 @@ export class Env<T> {
         private source: EnvSource,
         private schema: ZodSchema<T>,
     ) {
-        this.record = schema.parse(source.fetch())
+        try {
+            this.record = schema.parse(source.fetch())
+        } catch (e) {
+            if (e instanceof ZodError) {
+                //easier to understand error message
+                const map = e.errors.map(err => `==> ${err.path}: ${err.message}`).join('\n')
+                throw new Error(`Env validation error: \n${map}`)
+            }
+            throw e
+        }
     }
 
 
